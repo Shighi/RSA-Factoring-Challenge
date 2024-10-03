@@ -1,27 +1,29 @@
 #!/usr/bin/python3
-import sys
+"""Module that factorize as many numbers as possible
+ into a product of two smaller numbers."""
+from sys import argv
 
 
-def factorize(num):
-    """ Generate 2 factors for a given number"""
-    factor1 = 2
-    while (num % factor1):
-        if (factor1 <= num):
-            factor1 += 1
+def factorize(value):
+    """"print a simple descomposition of an integer > 1"""
+    i = 2
 
-    factor2 = num // factor1
-    return (factor2, factor1)
+    if value < 2:
+        return
+    while value % i:
+        i += 1
+    print("{:.0f}={:.0f}*{:.0f}".format(value, value / i, i))
 
+if len(argv) != 2:
+    exit()
 
-if len(sys.argv) != 2:
-    sys.exit(f"Wrong usage: {sys.argv[0]} <file_path>")
+try:
+    with open(argv[1]) as file:
+        line = file.readline()
 
-filename = sys.argv[1]
-
-file = open(filename, 'r')
-lines = file.readlines()
-
-for line in lines:
-    num = int(line.rstrip())
-    factor2, factor1 = factorize(num)
-    print(f"{num} = {factor2} * {factor1}")
+        while line != "":
+            value = int(line.split('\n')[0])
+            factorize(value)
+            line = file.readline()
+except:
+    pass
