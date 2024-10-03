@@ -1,34 +1,60 @@
 #!/usr/bin/python3
-"""Module that factorizes as many numbers as possible
-into a product of two smaller numbers."""
+
 from sys import argv
+import math
+import random
 
+def is_prime(num):
+    if num < 2:
+        return False
+    for i in range(2, int(math.sqrt(num)) + 1):
+        if num % i == 0:
+            return False
+    return True
 
-def factorize(value):
-    """Print a simple decomposition of an integer greater than 1."""
-    i = 2
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
 
-    if value < 2:
-        return
-    print()
-    print(value, "<- initial value")
-    while value % i:
-        i += 1
-    print("{:.0f}={:.0f}*{:.0f}".format(value, value / i, i))
-    print(value, "<- final value")
-    print()
+def pollards_rho(n):
+    x = random.randint(1, n - 1)
+    y = x
+    d = 1
+    f = lambda x: (x**2 + 1) % n
 
-# Check if exactly one argument is provided
-if len(argv) != 2:
-    exit()
+    while d == 1:
+        x = f(x)
+        y = f(f(y))
+        d = gcd(abs(x - y), n)
 
-try:
-    with open(argv[1]) as file:
-        line = file.readline()
+    return d, n // d
 
-        while line != "":
-            value = int(line.split('\n')[0])
-            factorize(value)
-            line = file.readline()
-except Exception:
-    pass
+def factorize(number):
+    if number < 2:
+        return None  # Cannot factorize numbers less than 2
+
+    if is_prime(number):
+        return None  # Cannot factorize a prime number
+
+    for i in range(2, int(math.sqrt(number)) + 1):
+        if number % i == 0 and is_prime(i):
+            return i, number // i
+
+    return pollards_rho(number)
+
+if __name__ == "__main__":
+    if len(argv) != 2:
+        print("Usage: ./factors <file>")
+        exit(1)
+
+    filename = argv[1]
+
+    with open(filename, 'r') as file:
+        for line in file:
+            number = int(line.strip())
+            factors = factorize(number)
+            if factors:
+                print(f"{number}={factors[0]}*{factors[1]}")
+            else:
+                print(f"{number} is prime and cannot be factorized")

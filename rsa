@@ -1,62 +1,22 @@
-#!/usr/bin/python3
-"""
-Factor as many numbers as possible into a product of two smaller numbers.
+#!/usr/bin/env bash
+
+check_factor()
+{
+    num=$1
+    factors=($(factor "$num" | awk '{ for (i=2; i<=NF; i++) print $i }'))
     
-Usage: factors <file>
-    Where <file> is a file containing natural numbers to be factored,
-    with one number per line. 
-    You can assume that all lines will contain valid natural numbers
-    greater than 1. 
-    There will be no empty lines, and there will be no spaces 
-    before or after the valid numbers. 
-    The file will always conclude with a newline character.
+    if [ "${#factors[@]}" -eq 2 ]; then
+        echo "$num=${factors[0]}*${factors[1]}"
+    else
+        echo "Error: Unable to factorize $num"
+    fi
+}
 
-Output format: n=p*q
-    Each factorization should appear on a new line.
-    Both p and q do not need to be prime numbers.
-    Refer to the provided example for clarity.
-
-You are free to process the numbers in the file in any order you prefer. 
-
-Requirements:
-    - Your program must execute without any external dependencies, 
-      as you will not be able to install anything on the machine 
-      where your program will run.
-    - There is a time limit: your program will be terminated after 
-      5 seconds if it has not completed.
-
-Make sure to push all your scripts, source code, and related files 
-to your repository.
-"""
-# Import the sys library to handle command-line arguments
-import sys
-
-
-# Function to unpack number factorials
-def fc():
-    """
-    The fc function reads a file, converts numbers, and formats them 
-    as n=p*q.
-    """
-    try:
-        revfile = sys.argv[1]
-        with open(revfile) as f:
-            for revnumber in f:
-                revnumber = int(revnumber)
-                if revnumber % 2 == 0:
-                    print("{}={}*{}".format(revnumber, revnumber // 2, 2))
-                    continue
-                i = 3
-                while i < revnumber // 2:
-                    if revnumber % i == 0:
-                        print("{}={}*{}".format(revnumber, revnumber // i, i))
-                        break
-                    i += 2
-                if i == (revnumber // 2) + 1:
-                    print("{}={}*{}".format(revnumber, revnumber, 1))
-    except IndexError:
-        pass
-
-
-# Auto-start the function
-fc()
+if [ $# -ne 1 ]; then
+    echo 'Usage: rsa <file>'
+    exit 1
+else
+    while read -r i; do
+        check_factor "$i"
+    done < "$1"
+fi
