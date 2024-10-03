@@ -1,34 +1,62 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
+"""
+Factor as many numbers as possible into a product of two smaller numbers.
+    
+Usage: factors <file>
+    Where <file> is a file containing natural numbers to be factored,
+    with one number per line. 
+    You can assume that all lines will contain valid natural numbers
+    greater than 1. 
+    There will be no empty lines, and there will be no spaces 
+    before or after the valid numbers. 
+    The file will always conclude with a newline character.
 
+Output format: n=p*q
+    Each factorization should appear on a new line.
+    Both p and q do not need to be prime numbers.
+    Refer to the provided example for clarity.
+
+You are free to process the numbers in the file in any order you prefer. 
+
+Requirements:
+    - Your program must execute without any external dependencies, 
+      as you will not be able to install anything on the machine 
+      where your program will run.
+    - There is a time limit: your program will be terminated after 
+      5 seconds if it has not completed.
+
+Make sure to push all your scripts, source code, and related files 
+to your repository.
+"""
+# Import the sys library to handle command-line arguments
 import sys
-from math import sqrt
 
-def is_prime(n):
-    if n < 2:
-        return False
-    for i in range(2, int(sqrt(n)) + 1):
-        if n % i == 0:
-            return False
-    return True
 
-def factorize_rsa(n):
-    for i in range(2, int(sqrt(n)) + 1):
-        if n % i == 0 and is_prime(i) and is_prime(n // i):
-            return f"{n}={n//i}*{i}"
-    return f"{n} is prime"
-
-def main(filename):
+# Function to unpack number factorials
+def fc():
+    """
+    The fc function reads a file, converts numbers, and formats them 
+    as n=p*q.
+    """
     try:
-        with open(filename, 'r') as file:
-            n = int(file.readline().strip())
-            print(factorize_rsa(n))
-    except FileNotFoundError:
-        print(f"Error: File '{filename}' not found.")
-    except ValueError:
-        print(f"Error: Invalid number in the file.")
+        revfile = sys.argv[1]
+        with open(revfile) as f:
+            for revnumber in f:
+                revnumber = int(revnumber)
+                if revnumber % 2 == 0:
+                    print("{}={}*{}".format(revnumber, revnumber // 2, 2))
+                    continue
+                i = 3
+                while i < revnumber // 2:
+                    if revnumber % i == 0:
+                        print("{}={}*{}".format(revnumber, revnumber // i, i))
+                        break
+                    i += 2
+                if i == (revnumber // 2) + 1:
+                    print("{}={}*{}".format(revnumber, revnumber, 1))
+    except IndexError:
+        pass
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: rsa <file>")
-        sys.exit(1)
-    main(sys.argv[1])
+
+# Auto-start the function
+fc()
