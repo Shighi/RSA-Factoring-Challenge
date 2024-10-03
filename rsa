@@ -1,48 +1,33 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
+import sys
+import math
 
-check_factor()
-{
-	if [ $# -ne 3 ];
-        then
-                args=("$@")
-                count=0
-                num2=1
-                for a in ${args[*]};
-                do
-                        if [ $count -gt 1 ];
-                        then
-                                num2=$(echo $a*$num2 | bc)
-                        fi
-                        count=$((count + 1))
-                done
-        else
-                num2=$3
-        fi
+def is_prime(n):
+    if n <= 1:
+        return False
+    for i in range(2, int(math.sqrt(n)) + 1):
+        if n % i == 0:
+            return False
+    return True
 
-        num1=$2
-        num=$(echo "$1" | tr ':' '=')
+def prime_factorization(n):
+    for i in range(2, int(math.sqrt(n)) + 1):
+        if n % i == 0 and is_prime(i):
+            other_factor = n // i
+            if is_prime(other_factor):
+                return i, other_factor
+    return n, 1  # Return n and 1 if n is prime
 
-        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
-	        if ((result == 1)); then
-		        numcp=$num1
-		        num1=$num2
-		        num2=$numcp
-                fi
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: rsa <file>")
+        return
 
-        echo "$num$num1*$num2"
-}
+    filename = sys.argv[1]
+    with open(filename, 'r') as file:
+        number = int(file.readline().strip())
+        p, q = prime_factorization(number)
+        print(f"{number}={p}*{q}")
 
-if [ $# -ne 1 ]
-then
-        echo 'Usage: rsa <file>'
-        exit 1
-else
-
-        while read i
-        do
-
-                result=$(factor "$i")
-                check_factor $result
-
-        done < "$1"
-fi
+if __name__ == "__main__":
+    main()
