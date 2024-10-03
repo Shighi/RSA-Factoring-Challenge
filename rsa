@@ -1,33 +1,34 @@
 #!/usr/bin/env python3
+
 import sys
-import math
+from math import sqrt
 
 def is_prime(n):
-    if n <= 1:
+    if n < 2:
         return False
-    for i in range(2, int(math.sqrt(n)) + 1):
+    for i in range(2, int(sqrt(n)) + 1):
         if n % i == 0:
             return False
     return True
 
-def prime_factorization(n):
-    for i in range(2, int(math.sqrt(n)) + 1):
-        if n % i == 0 and is_prime(i):
-            other_factor = n // i
-            if is_prime(other_factor):
-                return i, other_factor
-    return n, 1  # Return n and 1 if n is prime
+def factorize_rsa(n):
+    for i in range(2, int(sqrt(n)) + 1):
+        if n % i == 0 and is_prime(i) and is_prime(n // i):
+            return f"{n}={n//i}*{i}"
+    return f"{n} is prime"
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: rsa <file>")
-        return
-
-    filename = sys.argv[1]
-    with open(filename, 'r') as file:
-        number = int(file.readline().strip())
-        p, q = prime_factorization(number)
-        print(f"{number}={p}*{q}")
+def main(filename):
+    try:
+        with open(filename, 'r') as file:
+            n = int(file.readline().strip())
+            print(factorize_rsa(n))
+    except FileNotFoundError:
+        print(f"Error: File '{filename}' not found.")
+    except ValueError:
+        print(f"Error: Invalid number in the file.")
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("Usage: rsa <file>")
+        sys.exit(1)
+    main(sys.argv[1])
