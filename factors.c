@@ -1,46 +1,81 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
+#include <stdlib.h>
 #include <string.h>
 
-int main(int argc, char *argv[])
+/**
+ * factorize - Factorize a number and print the result
+ * @n: The number to factorize
+ *
+ * This function finds the smallest factor of n and prints the factorization.
+ */
+void factorize(unsigned long long n)
 {
-	FILE *stream;
+	unsigned long long i;
+
+	for (i = 2; i * i <= n; i++)
+	{
+		if (n % i == 0)
+		{
+			printf("%llu=%llu*%llu\n", n, n / i, i);
+			return;
+		}
+	}
+	printf("%llu=%llu*1\n", n, n);
+}
+
+/**
+ * process_file - Process each line from the input file
+ * @file: Pointer to the input file
+ *
+ * This function reads each line from the file, converts it to a number,
+ * and calls the factorize function if the number is greater than 1.
+ */
+void process_file(FILE *file)
+{
 	char *line = NULL;
 	size_t len = 0;
-	long long flag = 1, div, rest, number, counter;
-	ssize_t nread;
+	ssize_t read;
+	unsigned long long n;
 
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s <file>\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-
-	stream = fopen(argv[1], "r");
-	if (stream == NULL) {
-		perror("fopen");
-		exit(EXIT_FAILURE);
-	}
-
-	while ((nread = getline(&line, &len, stream)) != -1) {
-		flag = 1, div = 2;
-		number = atoll(line);
-		while (flag) {
-			rest = number % div;
-			if (!rest) {
-				counter = number / div;
-				printf("%lld=%lld*%lld\n", number, counter, div);
-				flag = 0;
-			}
-			div++;
-		}
+	while ((read = getline(&line, &len, file)) != -1)
+	{
+		n = strtoull(line, NULL, 10);
+		if (n > 1)
+			factorize(n);
 	}
 
 	free(line);
-	fclose(stream);
-	exit(EXIT_SUCCESS);
+}
+
+/**
+ * main - Entry point of the program
+ * @argc: Number of command-line arguments
+ * @argv: Array of command-line argument strings
+ *
+ * Return: 0 on success, 1 on failure
+ *
+ * This function checks the command-line arguments, opens the input file,
+ * calls process_file to handle the file contents, and then closes the file.
+ */
+int main(int argc, char *argv[])
+{
+	FILE *file;
+
+	if (argc != 2)
+	{
+		fprintf(stderr, "Usage: %s <file>\n", argv[0]);
+		return (1);
+	}
+
+	file = fopen(argv[1], "r");
+	if (file == NULL)
+	{
+		fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
+		return (1);
+	}
+
+	process_file(file);
+
+	fclose(file);
+	return (0);
 }
