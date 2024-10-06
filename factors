@@ -1,33 +1,46 @@
+#!/bin/bash
+# Compile the C program if it doesn't exist
+if [ ! -f "factors_c" ]; then
+    gcc -O3 -o factors_c factors.c -lm
+fi
+
+# Ensure Python helper exists
+cat > factors_helper.py << 'EOF'
 #!/usr/bin/python3
-"""Module that factorize as many numbers as possible
- into a product of two smaller numbers."""
-from sys import argv
+import sys
+from math import sqrt, isqrt
 
+def factorize_large(n):
+    n = int(n)
+    if n % 2 == 0:
+        return (2, n // 2)
+    for i in range(3, isqrt(n) + 1, 2):
+        if n % i == 0:
+            return (i, n // i)
+    return (1, n)
 
-def factorize(value):
-    """"print a simple descomposition of an integer > 1"""
-    i = 2
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        exit(1)
+    try:
+        num = sys.argv[1]
+        p, q = factorize_large(num)
+        print(f"{num}={q}*{p}")
+    except:
+        exit(1)
+EOF
 
-    if value < 2:
-        return
-    print()
-    print(value, "<- value-bef")
-    while value % i:
-        i += 1
-    print("{:.0f}={:.0f}*{:.0f}".format(value, value / i, i))
-    print(value, "<- value-aft")
-    print()
+chmod +x factors_helper.py
 
-if len(argv) != 2:
-    exit()
-
-try:
-    with open(argv[1]) as file:
-        line = file.readline()
-
-        while line != "":
-            value = int(line.split('\n')[0])
-            factorize(value)
-            line = file.readline()
-except:
-    pass
+# Process the input file
+while IFS= read -r line; do
+    # Remove any trailing whitespace
+    line=$(echo "$line" | tr -d '[:space:]')
+    
+    # Check if number is larger than 20 digits
+    if [ ${#line} -gt 20 ]; then
+        ./factors_helper.py "$line"
+    else
+        echo "$line" | ./factors_c
+    fi
+done < "$1"

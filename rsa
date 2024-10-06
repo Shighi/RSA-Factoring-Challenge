@@ -1,53 +1,39 @@
 #!/usr/bin/python3
-"""
-Factorize as many numbers as possible into a product of two smaller numbers.
-    Usage: factors <file>
-        where <file> is a file containing natural numbers to factor.
-        One number per line
-        You can assume that all lines will be valid natural numbers\
-                greater than 1
-        You can assume that there will be no empy line, and no space\
-                before and after the valid number
-        The file will always end with a new line
-    Output format: n=p*q
-        one factorization per line
-        p and q don’t have to be prime numbers
-        See example
-    You can work on the numbers of the file in the order of your choice
-    Your program should run without any dependency: You will not be ablei\
-            to install anything on the machine we will run your program on
-    Time limit: Your program will be killed after 5 seconds\
-            if it hasn’t finish
-    Push all your scripts, source code, etc… to your repository
-"""
-# library to get arguments
 import sys
+from math import sqrt, ceil
 
+def factorize(n):
+    """Find prime factors of n"""
+    for i in range(2, ceil(sqrt(n)) + 1):
+        if n % i == 0 and is_prime(i) and is_prime(n // i):
+            return i, n // i
+    return None
 
-# fn unpack number factorial
-def fc():
-    """
-    function fc to search file to convert number and format n=p*q
-    """
+def is_prime(n):
+    """Check if a number is prime"""
+    if n < 2:
+        return False
+    if n == 2:
+        return True
+    if n % 2 == 0:
+        return False
+    
+    # Only check odd numbers up to sqrt(n)
+    for i in range(3, int(sqrt(n)) + 1, 2):
+        if n % i == 0:
+            return False
+    return True
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        exit()
+
     try:
-        revfile = sys.argv[1]
-        with open(revfile) as f:
-            for revnumber in f:
-                revnumber = int(revnumber)
-                if revnumber % 2 == 0:
-                        print("{}={}*{}".format(revnumber, revnumber // 2, 2))
-                        continue
-                i = 3
-                while i < revnumber // 2:
-                    if revnumber % i == 0:
-                        print("{}={}*{}".format(revnumber, revnumber // i, i))
-                        break
-                    i = i + 2
-                if i == (revnumber // 2) + 1:
-                    print("{}={}*{}".format(revnumber, revnumber, 1))
-    except (IndexError):
-        pass
+        with open(sys.argv[1], 'r') as file:
+            number = int(file.readline().strip())
+    except (IOError, ValueError):
+        exit()
 
-
-# autostart
-fc()
+    factors = factorize(number)
+    if factors:
+        print(f"{number}={factors[1]}*{factors[0]}")
