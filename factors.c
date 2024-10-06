@@ -7,6 +7,9 @@
 /**
  * trial_division - Find factors using trial division
  * @num: String containing the number to factorize
+ *
+ * Description: This function attempts to factorize the given number
+ * using trial division method.
  */
 void trial_division(char *num)
 {
@@ -51,6 +54,8 @@ void trial_division(char *num)
  * @argv: Argument vector
  *
  * Return: 0 on success, 1 on failure
+ *
+ * Description: This function reads numbers from a file and factorizes them.
  */
 int main(int argc, char *argv[])
 {
@@ -60,16 +65,12 @@ int main(int argc, char *argv[])
 
 	/* Check for correct argument count */
 	if (argc != 2)
-	{
 		return (1);
-	}
 
 	/* Open the file for reading */
 	file = fopen(argv[1], "r");
 	if (!file)
-	{
 		return (1);
-	}
 
 	/* Start the timer */
 	start = clock();
@@ -79,9 +80,7 @@ int main(int argc, char *argv[])
 	{
 		/* Check time limit (5 seconds) */
 		if ((double)(clock() - start) / CLOCKS_PER_SEC > 4.5)
-		{
 			break;
-		}
 
 		/* Remove trailing newline if present */
 		line[strcspn(line, "\n")] = 0;
