@@ -1,28 +1,69 @@
 #!/usr/bin/python3
 import sys
-from math import sqrt, ceil
+import time
+import random
 
-def factorize(n):
-    """Find prime factors of n"""
-    for i in range(2, ceil(sqrt(n)) + 1):
-        if n % i == 0 and is_prime(i) and is_prime(n // i):
-            return i, n // i
-    return None
+def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
 
-def is_prime(n):
-    """Check if a number is prime"""
+def pollard_rho(n):
+    if n % 2 == 0:
+        return 2
+    
+    x = random.randint(1, n-1)
+    y = x
+    c = random.randint(1, n-1)
+    d = 1
+
+    f = lambda x: (x*x + c) % n
+    
+    while d == 1:
+        x = f(x)
+        y = f(f(y))
+        d = gcd(abs(x-y), n)
+        
+        if d == n:
+            return pollard_rho(n)
+    
+    return d
+
+def miller_rabin(n, k=5):
     if n < 2:
         return False
-    if n == 2:
-        return True
-    if n % 2 == 0:
-        return False
-    
-    # Only check odd numbers up to sqrt(n)
-    for i in range(3, int(sqrt(n)) + 1, 2):
-        if n % i == 0:
+    for p in [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]:
+        if n % p == 0:
+            return n == p
+    s, d = 0, n-1
+    while d % 2 == 0:
+        s, d = s+1, d//2
+    for _ in range(k):
+        a = random.randrange(2, n-1)
+        x = pow(a, d, n)
+        if x == 1 or x == n-1:
+            continue
+        for _ in range(s-1):
+            x = pow(x, 2, n)
+            if x == n-1:
+                break
+        else:
             return False
     return True
+
+def factorize(n, time_limit):
+    start_time = time.time()
+    
+    if miller_rabin(n):
+        return n, 1
+
+    while time.time() - start_time < time_limit:
+        factor = pollard_rho(n)
+        if factor != n:
+            if miller_rabin(factor) and miller_rabin(n // factor):
+                return factor, n // factor
+
+    return None
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -34,6 +75,12 @@ if __name__ == "__main__":
     except (IOError, ValueError):
         exit()
 
-    factors = factorize(number)
-    if factors:
-        print(f"{number}={factors[1]}*{factors[0]}")
+    result = factorize(number, 4.5)  # 4.5 second time limit
+    
+    if result:
+        p, q = result
+        if p > q:
+            p, q = q, p
+        print(f"{number}={q}*{p}")
+    else:
+        print("0")  # Couldn't factor in time
