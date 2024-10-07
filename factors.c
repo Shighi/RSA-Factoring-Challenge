@@ -1,92 +1,83 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
-#include <math.h>
+#include <time.h>
 
 /**
- * trial_division - Find factors using trial division
+ * trial_division - Find factors using optimized trial division
  * @num: String containing the number to factorize
  *
- * Description: This function attempts to factorize the given number
- * using trial division method.
+ * Description: Uses wheel factorization to skip numbers that can't be factors
  */
 void trial_division(char *num)
 {
 	unsigned long long n;
 	unsigned long long i;
-	char *endptr;
-
-	/* Convert string to number, checking for conversion errors */
-	n = strtoull(num, &endptr, 10);
-
-	/* If number is too large, print as is (handle in Python script) */
-	if (*endptr != '\n' && *endptr != '\0')
+	const unsigned long long small_primes[] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
+	size_t len = sizeof(small_primes) / sizeof(small_primes[0]);
+	
+	n = strtoull(num, NULL, 10);
+	
+	/* Check small primes first */
+	for (size_t j = 0; j < len; j++)
 	{
-		printf("%s", num);
-		return;
+		if (n % small_primes[j] == 0)
+		{
+			printf("%llu=%llu*%llu\n", n, n / small_primes[j], small_primes[j]);
+			return;
+		}
 	}
-
-	/* Check even numbers first */
-	if (n % 2 == 0)
-	{
-		printf("%llu=%llu*2\n", n, n / 2);
-		return;
-	}
-
-	/* Try odd numbers */
-	for (i = 3; i <= sqrt(n); i += 2)
+	
+	/* Use wheel factorization incrementing pattern */
+	const unsigned long long increments[] = {4, 2, 4, 2, 4, 6, 2, 6};
+	size_t inc_len = sizeof(increments) / sizeof(increments[0]);
+	size_t inc_idx = 0;
+	
+	i = 31;  /* Start after checking small primes */
+	while (i * i <= n)
 	{
 		if (n % i == 0)
 		{
 			printf("%llu=%llu*%llu\n", n, n / i, i);
 			return;
 		}
+		i += increments[inc_idx];
+		inc_idx = (inc_idx + 1) % inc_len;
 	}
-
-	/* If no factors found, print the number itself */
+	
 	printf("%llu=%llu*1\n", n, n);
 }
 
 /**
- * main - Entry point
+ * main - Entry point of the factors program
  * @argc: Argument count
- * @argv: Argument vector
+ * @argv: Array of argument strings
  *
  * Return: 0 on success, 1 on failure
- *
- * Description: This function reads numbers from a file and factorizes them.
  */
 int main(int argc, char *argv[])
 {
 	FILE *file;
 	char line[1024];
-	clock_t start;
-
-	/* Check for correct argument count */
+	clock_t start = clock();
+	double time_limit = 4.5;  /* Set slightly below 5s to ensure completion */
+	
 	if (argc != 2)
 		return (1);
-
-	/* Open the file for reading */
+	
 	file = fopen(argv[1], "r");
 	if (!file)
 		return (1);
-
-	/* Start the timer */
-	start = clock();
-
-	/* Process each line in the file */
+	
 	while (fgets(line, sizeof(line), file))
 	{
-		/* Check time limit (5 seconds) */
-		if ((double)(clock() - start) / CLOCKS_PER_SEC > 4.5)
+		if ((double)(clock() - start) / CLOCKS_PER_SEC > time_limit)
 			break;
-
-		/* Remove trailing newline if present */
+		
 		line[strcspn(line, "\n")] = 0;
 		trial_division(line);
 	}
-
+	
 	fclose(file);
 	return (0);
 }
